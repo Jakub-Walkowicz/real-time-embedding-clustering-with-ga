@@ -25,9 +25,16 @@ PRODUCER_CONFIG={
     "bootstrap.servers": BOOTSTRAP_SERVER
 }
 
-CONSUMER_CONFIG = {
+EMB_CONSUMER_CONFIG = {
     "bootstrap.servers": BOOTSTRAP_SERVER,
     "group.id": "embeddings-client",
+    "auto.offset.reset": "earliest",
+    "enable.auto.commit": False
+}
+
+GA_CONSUMER_CONFIG = {
+    "bootstrap.servers": BOOTSTRAP_SERVER,
+    "group.id": "genetic-algorithm-client",
     "auto.offset.reset": "earliest",
     "enable.auto.commit": False
 }

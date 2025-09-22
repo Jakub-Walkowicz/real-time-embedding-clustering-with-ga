@@ -1,10 +1,10 @@
-from config.config import CONSUMER_CONFIG, MSG_WITH_EMBEDDINGS_TOPIC, BATCH_SIZE
+from config.config import GA_CONSUMER_CONFIG, MSG_WITH_EMBEDDINGS_TOPIC, BATCH_SIZE
 from confluent_kafka import Consumer, KafkaError
 import json
 import numpy as np
 from sklearn.decomposition import IncrementalPCA
 
-consumer = Consumer(CONSUMER_CONFIG)
+consumer = Consumer(GA_CONSUMER_CONFIG)
 consumer.subscribe([MSG_WITH_EMBEDDINGS_TOPIC])
 
 # To replace with constant
@@ -18,6 +18,9 @@ embeddings = []
 try:
     while running:
         batch = consumer.consume(BATCH_SIZE, 5.0)
+        
+        print(len(batch))
+        exit
         
         if not batch:
             continue
