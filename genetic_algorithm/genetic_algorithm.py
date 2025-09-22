@@ -55,8 +55,6 @@ try:
         for i, message in enumerate(messages):
             message['reduced_embeddings'] = reduced_embeddings[i].tolist()
         
-        
-        
 except KeyboardInterrupt:
     print("Stopping listener...")
 finally:
