@@ -1,5 +1,5 @@
 from config import BATCH_SIZE, CONSUMER_CONFIG, EMBEDDING_MODEL, RAW_MSG_TOPIC, PRODUCER_CONFIG, MSG_WITH_EMBEDDINGS_TOPIC
-from utils import acked
+from utils.utils import acked
 from confluent_kafka import Consumer, KafkaError, Producer
 import json
 from sentence_transformers import SentenceTransformer

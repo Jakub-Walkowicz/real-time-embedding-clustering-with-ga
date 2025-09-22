@@ -1,5 +1,5 @@
 from config import PRODUCER_CONFIG, RAW_MSG_TOPIC, DATASET_PARAMS
-from utils import acked
+from utils.utils import acked
 from confluent_kafka import Producer
 import pandas as pd
 import json
