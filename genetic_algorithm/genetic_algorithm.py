@@ -15,6 +15,8 @@ running = True
 embeddings = []
 
 
+# REPLACE WITH POLL AS CONSUME IS BLOCKING (IF NO MSGS ARE AVAILABLE IT WILL BLOCK THE EXECUTION. THIS BEHAVIOUR IS NOT REAL-TIME)
+
 try:
     while running:
         batch = consumer.consume(BATCH_SIZE, 5.0)

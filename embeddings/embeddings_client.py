@@ -14,8 +14,6 @@ model = SentenceTransformer(EMBEDDING_MODEL)
 batch = []
 running = True
 
-# Warto przerobić na consume i wtedy samemu podac batch_size = consume([num_messages=1][, timeout=-1])
-
 try:
     while running:
         event = consumer.poll(1.0)
