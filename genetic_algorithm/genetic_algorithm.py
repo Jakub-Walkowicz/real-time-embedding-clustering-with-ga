@@ -1,15 +1,19 @@
 from config.config import CONSUMER_CONFIG, MSG_WITH_EMBEDDINGS_TOPIC, BATCH_SIZE
 from confluent_kafka import Consumer, KafkaError
 import json
-import numpy
+import numpy as np
+from sklearn.decomposition import IncrementalPCA
 
 consumer = Consumer(CONSUMER_CONFIG)
 consumer.subscribe([MSG_WITH_EMBEDDINGS_TOPIC])
 
+# To replace with constant
+ipca = IncrementalPCA(n_components=64)
 
-messages_decoded = []
-embeddings = []
+messages = []
 running = True
+embeddings = []
+
 
 try:
     while running:
@@ -29,13 +33,27 @@ try:
             
             try:
                 msg_decoded = json.loads(event.value().decode("utf-8"))
-                messages_decoded.append(msg_decoded)
-                embeddings.append(msg_decoded['embeddings'])
+                messages.append(msg_decoded)
+                embeddings.append(msg_decoded['embedding'])
             except(json.JSONDecodeError, KeyError) as e:
                 print((f"Could not parse the JSON message: {e}. Message: {event.value()}"))
 
-        # Reduce the number of dimensions
+        if not embeddings:
+            continue
         
+        # Reduce the number of dimensions
+        embeddings_batch = np.array(embeddings)
+        
+        try:
+            # Incrementally fit the model with real-time data
+            ipca.partial_fit(embeddings_batch)
+            reduced_embeddings = ipca.transform(embeddings)
+            print(f"Successfully processed a batch. Original shape: {embeddings_batch.shape}, Reduced shape: {reduced_embeddings.shape}")
+        except Exception as e:
+            print("En exception {e} has occured!")
+        
+        for i, message in enumerate(messages):
+            message['reduced_embeddings'] = reduced_embeddings[i].tolist()
         
         
         
