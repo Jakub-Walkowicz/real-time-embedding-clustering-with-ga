@@ -10,9 +10,8 @@ MSG_WITH_EMBEDDINGS_TOPIC = "messages-with-embeddings"
 PARTITIONS_NUM = 3
 REPLICATION_FACTOR_NUM = 3
 
-
 BATCH_SIZE = 64
-DATASET_FILE_PATH = "kaggle-twitter-dataset/twitter_dataset_1000.csv"
+DATASET_FILE_PATH = "kaggle_twitter_dataset/twitter_dataset_1000.csv"
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 
 DATASET_PARAMS = {

@@ -1,4 +1,4 @@
-from config import BATCH_SIZE, CONSUMER_CONFIG, EMBEDDING_MODEL, RAW_MSG_TOPIC, PRODUCER_CONFIG, MSG_WITH_EMBEDDINGS_TOPIC
+from config.config import BATCH_SIZE, CONSUMER_CONFIG, EMBEDDING_MODEL, RAW_MSG_TOPIC, PRODUCER_CONFIG, MSG_WITH_EMBEDDINGS_TOPIC
 from utils.utils import acked
 from confluent_kafka import Consumer, KafkaError, Producer
 import json
@@ -13,6 +13,8 @@ model = SentenceTransformer(EMBEDDING_MODEL)
 
 batch = []
 running = True
+
+# Warto przerobić na consume i wtedy samemu podac batch_size = consume([num_messages=1][, timeout=-1])
 
 try:
     while running:
@@ -60,8 +62,6 @@ try:
             
             print("Committing offset...")
             consumer.commit()
-
-            print(embeddings)
 
             batch = []
 

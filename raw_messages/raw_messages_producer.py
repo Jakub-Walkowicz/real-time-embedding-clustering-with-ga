@@ -1,4 +1,4 @@
-from config import PRODUCER_CONFIG, RAW_MSG_TOPIC, DATASET_PARAMS
+from config.config import PRODUCER_CONFIG, RAW_MSG_TOPIC, DATASET_PARAMS
 from utils.utils import acked
 from confluent_kafka import Producer
 import pandas as pd
