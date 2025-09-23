@@ -1,4 +1,4 @@
-from config.config import BATCH_SIZE, EMB_CONSUMER_CONFIG, EMBEDDING_MODEL, RAW_MSG_TOPIC, PRODUCER_CONFIG, MSG_WITH_EMBEDDINGS_TOPIC
+from config.config import BATCH_SIZE, EMB_CONSUMER_CONFIG, EMBEDDING_MODEL, RAW_MSG_TOPIC, PRODUCER_CONFIG, MSG_WITH_EMBEDDINGS_TOPIC, TEXT, EMBEDDINGS
 from utils.utils import acked
 from confluent_kafka import Consumer, KafkaError, Producer
 import json
@@ -11,12 +11,12 @@ producer = Producer(PRODUCER_CONFIG)
 
 model = SentenceTransformer(EMBEDDING_MODEL)
 
-batch = []
 running = True
 
 try:
     while running:
         event = consumer.poll(1.0)
+        batch = []
 
         if not event:
             continue
@@ -29,10 +29,10 @@ try:
             continue
         
         try:
-            msg_decoded = json.loads(event.value().decode("utf-8"))['text']
+            msg_decoded = json.loads(event.value().decode("utf-8"))[TEXT]
             batch.append(msg_decoded)
         except(json.JSONDecodeError, KeyError) as e:
-            print((f"Could not parse the JSON message: {e}. Message: {event.value()}"))
+            print((f"Could not parse the JSON message: {e}."))
             continue
 
         if len(batch) >= BATCH_SIZE:
@@ -43,11 +43,11 @@ try:
             print(f"Successfully created {len(embeddings)} embeddings.")
 
             # Send messages to next topic
-            for i, raw_event in enumerate(batch):
+            for i, text in enumerate(batch):
 
                 enriched_event = {
-                    "raw_event": raw_event,
-                    "embeddings": embeddings[i].tolist()
+                    TEXT: text,
+                    EMBEDDINGS: embeddings[i].tolist()
                 }
                 
                 enriched_event_encoded = json.dumps(enriched_event).encode("utf-8")
@@ -59,9 +59,7 @@ try:
             print("All messages from a batch have been sent...")
             
             print("Committing offset...")
-            consumer.commit()
-
-            batch = []
+            consumer.commit(asynchronous=True)
 
 except KeyboardInterrupt:
     print("Stopping listener...")
