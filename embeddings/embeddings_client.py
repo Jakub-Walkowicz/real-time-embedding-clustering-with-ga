@@ -15,45 +15,43 @@ running = True
 
 try:
     while running:
-        event = consumer.poll(1.0)
-        batch = []
-
-        if not event:
+        batch = consumer.consume(BATCH_SIZE, 1.0)
+        messages = []
+        
+        if not batch:
             continue
         
-        if event.error():
-            if event.error().code() == KafkaError._PARTITION_EOF:
-                print(f"Reached end of the partition: {event.topic()} [{event.partition()}]")
-            else:
-                print(f"Consumer error: {event.error()}")
-            continue
-        
-        try:
-            msg_decoded = json.loads(event.value().decode("utf-8"))[TEXT]
-            batch.append(msg_decoded)
-        except(json.JSONDecodeError, KeyError) as e:
-            print((f"Could not parse the JSON message: {e}."))
-            continue
+        for event in batch:
+            if event.error():
+                if event.error().code() == KafkaError._PARTITION_EOF:
+                    print(f"Reached end of the partition: {event.topic()} [{event.partition()}]")
+                else:
+                    print(f"Consumer error: {event.error()}")
+                continue
+            
+            try:
+                event_decoded = json.loads(event.value().decode("utf-8"))[TEXT]
+                messages.append(event_decoded)
+            except(json.JSONDecodeError, KeyError) as e:
+                print((f"Could not parse the JSON message: {e}."))
+                continue
 
-        if len(batch) >= BATCH_SIZE:
-            print(f"Received a batch of {len(batch)} messages.")
+        print("Encoding messages with SentenceTransformer...")
+        embeddings = model.encode(messages)
+        print(f"Successfully created {len(embeddings)} embeddings.")
 
-            print("Encoding messages with SentenceTransformer...")
-            embeddings = model.encode(batch)
-            print(f"Successfully created {len(embeddings)} embeddings.")
+        # Send messages to next topic
+        for i, text in enumerate(messages):
 
-            # Send messages to next topic
-            for i, text in enumerate(batch):
-
-                enriched_event = {
-                    TEXT: text,
-                    EMBEDDINGS: embeddings[i].tolist()
-                }
-                
-                enriched_event_encoded = json.dumps(enriched_event).encode("utf-8")
-                producer.produce(MSG_WITH_EMBEDDINGS_TOPIC, value=enriched_event_encoded, callback=acked)
-                producer.poll(0)
-                print("Sending messages from a batch...")
+            enriched_event = {
+                TEXT: text,
+                EMBEDDINGS: embeddings[i].tolist()
+            }
+            
+            enriched_event_encoded = json.dumps(enriched_event).encode("utf-8")
+            producer.produce(MSG_WITH_EMBEDDINGS_TOPIC, value=enriched_event_encoded, callback=acked)
+            producer.poll(0)
+            print("Sending messages from a batch...")
             
             producer.flush()          
             print("All messages from a batch have been sent...")
